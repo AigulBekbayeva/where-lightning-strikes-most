@@ -1,17 +1,27 @@
 name: Build data
 
 # Запускается вручную: Actions → Build data → Run workflow.
-# Нужен секрет репозитория CDSAPI_KEY (персональный токен Copernicus CDS).
-# Необязательно: EARTHDATA_USERNAME / EARTHDATA_PASSWORD — запасной путь к LIS/OTD.
+# Секреты репозитория (Settings → Secrets and variables → Actions):
+#   CDSAPI_KEY          — персональный токен Copernicus CDS (обязательно)
+#   EARTHDATA_USERNAME  — учётная запись NASA Earthdata (запасной путь к LIS/OTD,
+#   EARTHDATA_PASSWORD    если сервер APDRC недоступен)
 on:
   workflow_dispatch:
     inputs:
       years:
         description: "Период ERA5"
         default: "1995-2014"
+      lightning_only:
+        description: "Только проверить загрузку молний LIS/OTD (без ERA5 и без коммита)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-data
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -29,19 +39,56 @@ jobs:
       - name: Install
         run: pip install -r scripts/requirements.txt
 
+      - name: Check data sources
+        continue-on-error: true
+        env:
+          HAS_CDS: ${{ secrets.CDSAPI_KEY != '' }}
+          HAS_EARTHDATA: ${{ secrets.EARTHDATA_USERNAME != '' && secrets.EARTHDATA_PASSWORD != '' }}
+        run: |
+          check() { printf '%-60s ' "$1"; curl -sS -o /dev/null -m 30 -w '%{http_code}\n' "$1" || true; }
+          check https://apdrc.soest.hawaii.edu/erddap/index.html
+          check http://apdrc.soest.hawaii.edu/erddap/index.html
+          check https://cmr.earthdata.nasa.gov/search/collections.json?concept_id=C1995863244-GHRC_DAAC
+          check https://urs.earthdata.nasa.gov
+          check https://cds.climate.copernicus.eu/api/catalogue/v1/collections/reanalysis-era5-single-levels-monthly-means
+          echo "CDSAPI_KEY задан: $HAS_CDS"
+          echo "EARTHDATA_USERNAME и EARTHDATA_PASSWORD заданы: $HAS_EARTHDATA"
+
+      # Скачанные NetCDF сохраняются между запусками, чтобы не ждать очередь CDS заново
+      - name: Restore downloads
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache
+          key: downloads-${{ inputs.years }}-${{ github.run_id }}
+          restore-keys: downloads-${{ inputs.years }}-
+
       - name: Download and process
         env:
           CDSAPI_URL: https://cds.climate.copernicus.eu/api
           CDSAPI_KEY: ${{ secrets.CDSAPI_KEY }}
           EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
           EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
-        run: python scripts/prepare_data.py --years "${{ inputs.years }}"
+        run: |
+          if [ "${{ inputs.lightning_only }}" = "true" ]; then
+            python scripts/prepare_data.py --lightning-only
+          else
+            python scripts/prepare_data.py --years "${{ inputs.years }}"
+          fi
+
+      - name: Save downloads
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache
+          key: downloads-${{ inputs.years }}-${{ github.run_id }}
 
       - name: Commit layers
+        if: ${{ !inputs.lightning_only }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/grid
           git diff --cached --quiet && echo "Нет изменений" && exit 0
           git commit -m "Update data layers (LIS/OTD HRFC + ERA5 ${{ inputs.years }})"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push
