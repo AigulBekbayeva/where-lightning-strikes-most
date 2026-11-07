@@ -125,7 +125,7 @@ def _fetch(url: str, target: Path, timeout: int, headers: dict | None = None) ->
 def download_lightning(cache: Path) -> Path:
     """Перебирает источники HRFC по очереди; бросает SourceUnavailable, если не сработал ни один."""
     target = cache / "lisotd_hrfc.nc"
-    if target.exists() and _is_netcdf(target):
+    if _nc_ok(target):
         log(f"LIS/OTD HRFC уже скачан: {target}")
         return target
 
@@ -189,7 +189,56 @@ def download_lightning(cache: Path) -> Path:
     raise SourceUnavailable("; ".join(errors))
 
 
+def _nc_ok(path: Path) -> bool:
+    """Файл существует и открывается как NetCDF (недокачанный файл не считается)."""
+    if not (path.exists() and _is_netcdf(path)):
+        return False
+    try:
+        with xr.open_dataset(path) as ds:
+            names = [v for v in ds.data_vars if ds[v].ndim >= 2]
+            if not names:
+                return False
+            da = ds[names[0]]
+            # читаем последний элемент: у недокачанного файла хвоста нет
+            da.isel({d: -1 for d in da.dims}).load()
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _split_era5(download: Path, wanted: dict[str, str], cache: Path) -> None:
+    """Раскладывает ответ CDS (один NetCDF или zip с несколькими) на файлы era5_<short>.nc."""
+    import zipfile  # noqa: PLC0415
+
+    parts: list[Path] = []
+    if zipfile.is_zipfile(download):
+        outdir = download.with_suffix("")
+        outdir.mkdir(exist_ok=True)
+        with zipfile.ZipFile(download) as z:
+            for member in z.namelist():
+                if member.endswith(".nc") and "/" not in member.strip("/") and ".." not in member:
+                    z.extract(member, outdir)
+                    parts.append(outdir / member)
+    else:
+        parts.append(download)
+
+    found = set()
+    for part in parts:
+        with xr.open_dataset(part) as ds:
+            for short in wanted:
+                if short in ds.data_vars:
+                    ds[[short]].load().to_netcdf(cache / f"era5_{short}.nc")
+                    found.add(short)
+    if download.with_suffix("").is_dir():
+        import shutil  # noqa: PLC0415
+        shutil.rmtree(download.with_suffix(""), ignore_errors=True)
+    missing = set(wanted) - found
+    if missing:
+        sys.exit(f"В ответе CDS нет переменных {sorted(missing)}; файлы: {[p.name for p in parts]}")
+
+
 def download_era5(cache: Path, years: list[int], native: bool) -> None:
+    """Два запроса к CDS вместо шести: каждый запрос отдельно ждёт в очереди Copernicus."""
     import cdsapi  # noqa: PLC0415
 
     client = cdsapi.Client()
@@ -202,24 +251,25 @@ def download_era5(cache: Path, years: list[int], native: bool) -> None:
     if not native:
         base["grid"] = [STEP, STEP]
 
-    for short, name in ERA5_MONTHLY.items():
-        target = cache / f"era5_{short}.nc"
-        if target.exists():
-            log(f"ERA5 {name} уже скачан")
+    groups = [
+        ("monthly", ERA5_MONTHLY, {"year": [str(y) for y in years], "month": [f"{m:02d}" for m in range(1, 13)]},
+         f"среднемесячные поля за {years[0]}–{years[-1]}"),
+        ("static", ERA5_STATIC, {"year": [str(years[0])], "month": ["01"]}, "постоянные поля (рельеф, суша/море)"),
+    ]
+    for tag, variables, when, label in groups:
+        todo = {short: name for short, name in variables.items() if not _nc_ok(cache / f"era5_{short}.nc")}
+        done = sorted(set(variables) - set(todo))
+        if done:
+            log(f"ERA5 уже в кеше: {', '.join(done)}")
+        if not todo:
             continue
-        log(f"Запрашиваю ERA5 {name} за {years[0]}–{years[-1]} (CDS может держать запрос в очереди) …")
-        req = dict(base, variable=[name], year=[str(y) for y in years],
-                   month=[f"{m:02d}" for m in range(1, 13)])
-        client.retrieve(ERA5_DATASET, req, str(target))
-
-    for short, name in ERA5_STATIC.items():
-        target = cache / f"era5_{short}.nc"
-        if target.exists():
-            log(f"ERA5 {name} уже скачан")
-            continue
-        log(f"Запрашиваю ERA5 {name} (постоянное поле) …")
-        req = dict(base, variable=[name], year=[str(years[0])], month=["01"])
-        client.retrieve(ERA5_DATASET, req, str(target))
+        log(f"Запрашиваю ERA5, {label}: {', '.join(todo.values())}. CDS может держать запрос в очереди …")
+        download = cache / f"era5_{tag}_download.nc"
+        download.unlink(missing_ok=True)
+        client.retrieve(ERA5_DATASET, dict(base, variable=list(todo.values()), **when), str(download))
+        _split_era5(download, todo, cache)
+        download.unlink(missing_ok=True)
+        log(f"  готово: {', '.join(todo)}")
 
 
 # ---------------------------------------------------------------------------
