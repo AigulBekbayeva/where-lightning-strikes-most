@@ -260,25 +260,43 @@ def to_target_grid(da: xr.DataArray) -> xr.DataArray:
 def read_lightning(path: Path) -> np.ndarray:
     ds = xr.open_dataset(path)
     da = _main_var(ds, prefer="hrfc_com_fr")
+    log(f"  поле {da.name}: размерности {dict(da.sizes)}")
+    # лишние размерности длины 1 (время, уровень) убираем
     for d in list(da.dims):
-        if d.lower() not in ("lat", "latitude", "lon", "longitude") and da.sizes[d] == 1:
+        if da.sizes[d] == 1:
             da = da.isel({d: 0})
-    try:
-        lat, lon = _coord(da, "latitude", "lat"), _coord(da, "longitude", "lon")
-        da = da.rename({lat: "lat", lon: "lon"}).sortby("lat", ascending=False).sortby("lon")
-        arr = da.values.astype("float64")
-    except KeyError:
-        # файл GHRC без координат: считаем порядок (lat −90→90, lon −180→180)
-        arr = np.asarray(da.values, dtype="float64")
-        if arr.shape == (NLON, NLAT):
-            arr = arr.T
-        arr = arr[::-1, :]
+    if da.ndim != 2:
+        sys.exit(f"Ожидалось 2-мерное поле HRFC, получено {dict(da.sizes)}")
+
+    # какая ось — широта, какая — долгота: по имени, иначе по длине (360 / 720)
+    def axis(names: tuple[str, ...], size: int) -> str:
+        for d in da.dims:
+            if any(n in d.lower() for n in names):
+                return d
+        for d in da.dims:
+            if da.sizes[d] == size:
+                return d
+        sys.exit(f"Не нашёл ось {names} в {dict(da.sizes)}")
+
+    dlat, dlon = axis(("lat", "y"), NLAT), axis(("lon", "x"), NLON)
+    da = da.transpose(dlat, dlon)
+    arr = np.asarray(da.values, dtype="float64")
     if arr.shape != (NLAT, NLON):
         sys.exit(f"Неожиданная форма HRFC: {arr.shape}")
+
+    # ориентация по значениям координат, если они есть в файле
+    lat_vals = da[dlat].values if dlat in da.coords else None
+    lon_vals = da[dlon].values if dlon in da.coords else None
+    if lat_vals is not None and lat_vals[0] < lat_vals[-1]:
+        arr = arr[::-1, :]
+    if lon_vals is not None:
+        lon_vals = ((np.asarray(lon_vals, dtype="float64") + 180) % 360) - 180
+        arr = arr[:, np.argsort(lon_vals, kind="stable")]
+
     arr = np.nan_to_num(arr, nan=0.0)
     arr[arr < 0] = 0
 
-    # Проверка ориентации: Пакистан (34° с.ш.) — горячая точка, а 34° ю.ш. там океан
+    # Проверка ориентации: Пакистан (34° с. ш.) — горячая точка, а на 34° ю. ш. там океан
     i_n, i_s, j = _idx(34.25), _idx(-34.25), _jdx(72.25)
     if arr[i_s, j] > arr[i_n, j]:
         log("⚠ похоже, широты перевёрнуты — переворачиваю")
