@@ -5,6 +5,10 @@
 Интерактивная карта грозовой активности Земли для GitHub Pages.
 Данные: NASA LIS/OTD, ERA5.
 
+Две версии страницы: русская — `index.html`, английская — `en.html` (переключатель в правом верхнем углу панели, вид карты сохраняется).
+
+*English:* an interactive map of global thunderstorm activity from NASA LIS/OTD lightning climatology and ERA5 reanalysis. English page: `en.html`.
+
 ## Что на карте
 
 | Слой | Что показывает | Источник |
@@ -28,7 +32,8 @@
 ## Структура
 
 ```
-index.html              страница
+index.html              страница (русский)
+en.html                 страница (English)
 css/style.css           оформление (светлая и тёмная тема)
 js/app.js               карта (Leaflet), отрисовка сетки, графики
 data/hotspots.json      горячие точки (Albrecht et al., 2016)
@@ -46,6 +51,8 @@ scripts/prepare_data.py загрузка и обработка LIS/OTD + ERA5
 
 Пока слои не собраны, на карте видны только горячие точки, а в панели — подсказка, как собрать данные.
 
+> **Важно:** папка `.github` и файлы `.gitignore`, `.nojekyll` начинаются с точки, поэтому macOS и Windows их скрывают. При загрузке через браузер («Add file → Upload files») они не попадают в репозиторий, и действие **Build data** не появится. Создайте workflow вручную: **Add file → Create new file**, в поле имени введите `.github/workflows/build-data.yml` (слэши сами создадут папки), вставьте содержимое файла из архива и нажмите **Commit changes**. Скрытые файлы показываются в Finder по ⌘ + Shift + `.`, а в Проводнике Windows — через «Вид → Скрытые элементы».
+
 ### 2. Собрать данные
 
 **Нужен ключ Copernicus CDS** (бесплатно):
@@ -54,14 +61,18 @@ scripts/prepare_data.py загрузка и обработка LIS/OTD + ERA5
 2. Откройте страницу набора [ERA5 monthly averaged data on single levels](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels-monthly-means) → вкладка *Download* → примите лицензию внизу страницы (без этого API вернёт ошибку).
 3. Скопируйте персональный токен из профиля.
 
-Климатология молний скачивается с открытого ERDDAP-сервера APDRC (Гавайский университет) без регистрации. Если он недоступен, скрипт пробует NASA Earthdata — тогда нужна учётная запись <https://urs.earthdata.nasa.gov>.
+Климатология молний сначала скачивается с открытого ERDDAP-сервера APDRC (Гавайский университет) без регистрации. Этот сервер иногда не отвечает раннерам GitHub, поэтому **рекомендуем сразу завести бесплатную учётную запись NASA Earthdata** — <https://urs.earthdata.nasa.gov> — и добавить её в секреты: тогда скрипт возьмёт файл напрямую из архива NASA GHRC DAAC.
 
 **Вариант А — GitHub Actions** (ничего не нужно ставить):
 
-1. **Settings → Secrets and variables → Actions → New repository secret**: `CDSAPI_KEY` = ваш токен.
-   Необязательно: `EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD`.
+1. **Settings → Secrets and variables → Actions → New repository secret**: `CDSAPI_KEY` = ваш токен,
+   `EARTHDATA_USERNAME` и `EARTHDATA_PASSWORD` = логин и пароль NASA Earthdata.
 2. **Actions → Build data → Run workflow.**
 3. Скрипт скачает данные, соберёт `data/grid/` и закоммитит его. Запрос к CDS может постоять в очереди — от нескольких минут до пары часов.
+
+   Скачанные файлы кешируются между запусками: если что-то упало, повторный запуск не будет заново ждать очередь CDS.
+   Чтобы быстро проверить только загрузку молний, поставьте галочку **lightning_only** при запуске (займёт пару минут).
+   Шаг **Check data sources** в логе показывает, какие серверы отвечают и заданы ли секреты.
 
 **Вариант Б — локально:**
 
