@@ -10,7 +10,10 @@
    "lon": -71.65,
    "place": "Озеро Маракайбо (Лагунильяс)",
    "country": "Венесуэла",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Lake Maracaibo (Lagunillas)",
+   "country_en": "Venezuela",
+   "continent_en": "South America"
   },
   {
    "rank": 2,
@@ -19,7 +22,10 @@
    "lon": 27.75,
    "place": "Кабаре",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Kabare",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 3,
@@ -28,7 +34,10 @@
    "lon": 27.65,
    "place": "Кампене",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Kampene",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 4,
@@ -37,7 +46,10 @@
    "lon": -75.35,
    "place": "Касерес",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Cáceres",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 5,
@@ -46,7 +58,10 @@
    "lon": 27.95,
    "place": "Саке",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Sake",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 6,
@@ -55,7 +70,10 @@
    "lon": 72.35,
    "place": "Даггар",
    "country": "Пакистан",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Daggar",
+   "country_en": "Pakistan",
+   "continent_en": "Asia"
   },
   {
    "rank": 7,
@@ -64,7 +82,10 @@
    "lon": -73.05,
    "place": "Эль-Тарра",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "El Tarra",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 8,
@@ -73,7 +94,10 @@
    "lon": 9.35,
    "place": "Нгути",
    "country": "Камерун",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Nguti",
+   "country_en": "Cameroon",
+   "continent_en": "Africa"
   },
   {
    "rank": 9,
@@ -82,7 +106,10 @@
    "lon": 28.45,
    "place": "Бутембо",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Butembo",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 10,
@@ -91,7 +118,10 @@
    "lon": 20.95,
    "place": "Боенде",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Boende",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 11,
@@ -100,7 +130,10 @@
    "lon": -74.95,
    "place": "Норкасия",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Norcasia",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 12,
@@ -109,7 +142,10 @@
    "lon": 74.55,
    "place": "Раджаури",
    "country": "Индия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Rajouri",
+   "country_en": "India",
+   "continent_en": "Asia"
   },
   {
    "rank": 13,
@@ -118,7 +154,10 @@
    "lon": 70.75,
    "place": "Доаба",
    "country": "Пакистан",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Doaba",
+   "country_en": "Pakistan",
+   "continent_en": "Asia"
   },
   {
    "rank": 14,
@@ -127,7 +166,10 @@
    "lon": 20.35,
    "place": "Боенде",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Boende",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 15,
@@ -136,7 +178,10 @@
    "lon": 26.95,
    "place": "Кинду",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Kindu",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 16,
@@ -145,7 +190,10 @@
    "lon": 10.45,
    "place": "Баисса",
    "country": "Нигерия",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Baissa",
+   "country_en": "Nigeria",
+   "continent_en": "Africa"
   },
   {
    "rank": 17,
@@ -154,7 +202,10 @@
    "lon": -91.15,
    "place": "Патулуль",
    "country": "Гватемала",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Patulul",
+   "country_en": "Guatemala",
+   "continent_en": "North America"
   },
   {
    "rank": 18,
@@ -163,7 +214,10 @@
    "lon": -74.55,
    "place": "Махагуаль",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Majagual",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 19,
@@ -172,7 +226,10 @@
    "lon": 26.65,
    "place": "Кисангани",
    "country": "ДР Конго",
-   "continent": "Африка"
+   "continent": "Африка",
+   "place_en": "Kisangani",
+   "country_en": "DR Congo",
+   "continent_en": "Africa"
   },
   {
    "rank": 22,
@@ -181,7 +238,10 @@
    "lon": 43.45,
    "place": "Эль-Хадия",
    "country": "Йемен",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Al Hadiyah",
+   "country_en": "Yemen",
+   "continent_en": "Asia"
   },
   {
    "rank": 25,
@@ -190,7 +250,10 @@
    "lon": -76.85,
    "place": "Турбо",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Turbo",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 28,
@@ -199,7 +262,10 @@
    "lon": 73.25,
    "place": "Мурри",
    "country": "Пакистан",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Murree",
+   "country_en": "Pakistan",
+   "continent_en": "Asia"
   },
   {
    "rank": 29,
@@ -208,7 +274,10 @@
    "lon": -92.05,
    "place": "Катарина",
    "country": "Гватемала",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Catarina",
+   "country_en": "Guatemala",
+   "continent_en": "North America"
   },
   {
    "rank": 31,
@@ -217,7 +286,10 @@
    "lon": 91.95,
    "place": "Черрапунджи",
    "country": "Индия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Cherrapunji",
+   "country_en": "India",
+   "continent_en": "Asia"
   },
   {
    "rank": 33,
@@ -226,7 +298,10 @@
    "lon": -83.95,
    "place": "Сан-Луис",
    "country": "Куба",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "San Luis",
+   "country_en": "Cuba",
+   "continent_en": "North America"
   },
   {
    "rank": 34,
@@ -235,7 +310,10 @@
    "lon": -74.35,
    "place": "Шамбеллан",
    "country": "Гаити",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Chambellan",
+   "country_en": "Haiti",
+   "continent_en": "North America"
   },
   {
    "rank": 37,
@@ -244,7 +322,10 @@
    "lon": -87.25,
    "place": "Сан-Херонимо",
    "country": "Гондурас",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "San Jerónimo",
+   "country_en": "Honduras",
+   "continent_en": "North America"
   },
   {
    "rank": 39,
@@ -253,7 +334,10 @@
    "lon": -80.65,
    "place": "Родас",
    "country": "Куба",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Rodas",
+   "country_en": "Cuba",
+   "continent_en": "North America"
   },
   {
    "rank": 40,
@@ -262,7 +346,10 @@
    "lon": -78.85,
    "place": "Венесуэла",
    "country": "Куба",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Venezuela",
+   "country_en": "Cuba",
+   "continent_en": "North America"
   },
   {
    "rank": 42,
@@ -271,7 +358,10 @@
    "lon": 103.05,
    "place": "Пака",
    "country": "Малайзия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Paka",
+   "country_en": "Malaysia",
+   "continent_en": "Asia"
   },
   {
    "rank": 45,
@@ -280,7 +370,10 @@
    "lon": 103.85,
    "place": "Кота-Тинги",
    "country": "Малайзия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Kota Tinggi",
+   "country_en": "Malaysia",
+   "continent_en": "Asia"
   },
   {
    "rank": 46,
@@ -289,7 +382,10 @@
    "lon": -72.95,
    "place": "Барранкас",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Barrancas",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 47,
@@ -298,7 +394,10 @@
    "lon": -82.15,
    "place": "Маньялич",
    "country": "Куба",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Mañalich",
+   "country_en": "Cuba",
+   "continent_en": "North America"
   },
   {
    "rank": 50,
@@ -307,7 +406,10 @@
    "lon": 98.05,
    "place": "Тенгулун",
    "country": "Индонезия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Tenggulun",
+   "country_en": "Indonesia",
+   "continent_en": "Asia"
   },
   {
    "rank": 52,
@@ -316,7 +418,10 @@
    "lon": 101.65,
    "place": "Куала-Лумпур",
    "country": "Малайзия",
-   "continent": "Азия"
+   "continent": "Азия",
+   "place_en": "Kuala Lumpur",
+   "country_en": "Malaysia",
+   "continent_en": "Asia"
   },
   {
    "rank": 61,
@@ -325,7 +430,10 @@
    "lon": 125.35,
    "place": "Дерби",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Derby",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 74,
@@ -334,7 +442,10 @@
    "lon": -65.05,
    "place": "Чиморе",
    "country": "Боливия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Chimoré",
+   "country_en": "Bolivia",
+   "continent_en": "South America"
   },
   {
    "rank": 78,
@@ -343,7 +454,10 @@
    "lon": -70.95,
    "place": "Эль-Корозо",
    "country": "Венесуэла",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "El Corozo",
+   "country_en": "Venezuela",
+   "continent_en": "South America"
   },
   {
    "rank": 82,
@@ -352,7 +466,10 @@
    "lon": -105.25,
    "place": "Росаморада",
    "country": "Мексика",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Rosamorada",
+   "country_en": "Mexico",
+   "continent_en": "North America"
   },
   {
    "rank": 83,
@@ -361,7 +478,10 @@
    "lon": 126.55,
    "place": "Кунунарра",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Kununurra",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 90,
@@ -370,7 +490,10 @@
    "lon": -77.65,
    "place": "Балаклава",
    "country": "Ямайка",
-   "continent": "Северная Америка"
+   "continent": "Северная Америка",
+   "place_en": "Balaclava",
+   "country_en": "Jamaica",
+   "continent_en": "North America"
   },
   {
    "rank": 136,
@@ -379,7 +502,10 @@
    "lon": -75.35,
    "place": "Санта-Роса",
    "country": "Колумбия",
-   "continent": "Южная Америка"
+   "continent": "Южная Америка",
+   "place_en": "Santa Rosa",
+   "country_en": "Colombia",
+   "continent_en": "South America"
   },
   {
    "rank": 228,
@@ -388,7 +514,10 @@
    "lon": 124.75,
    "place": "Дерби",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Derby",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 308,
@@ -397,7 +526,10 @@
    "lon": 128.45,
    "place": "Кунунарра",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Kununurra",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 316,
@@ -406,7 +538,10 @@
    "lon": 142.95,
    "place": "Амбунти",
    "country": "Папуа — Новая Гвинея",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Ambunti",
+   "country_en": "Papua New Guinea",
+   "continent_en": "Oceania"
   },
   {
    "rank": 327,
@@ -415,7 +550,10 @@
    "lon": 129.45,
    "place": "Кунунарра",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Kununurra",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 355,
@@ -424,7 +562,10 @@
    "lon": 131.05,
    "place": "Макминс-Лагун",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "McMinns Lagoon",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 381,
@@ -433,7 +574,10 @@
    "lon": 129.95,
    "place": "Дарвин",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Darwin",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 471,
@@ -442,7 +586,10 @@
    "lon": 137.85,
    "place": "Маунт-Айза",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Mount Isa",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   },
   {
    "rank": 477,
@@ -451,7 +598,11 @@
    "lon": 126.05,
    "place": "Холлс-Крик",
    "country": "Австралия",
-   "continent": "Океания"
+   "continent": "Океания",
+   "place_en": "Halls Creek",
+   "country_en": "Australia",
+   "continent_en": "Oceania"
   }
- ]
+ ],
+ "note_en": "Flash rate density from TRMM LIS on a 0.1° grid, 1998–2013. Shown here: the top 10 points on each continent from the paper's table; rank is global."
 }

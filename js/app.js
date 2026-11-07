@@ -3,6 +3,88 @@
 (() => {
   "use strict";
 
+
+  // ---------------------------------------------------------------- тексты (ru / en)
+  const I18N = {
+    ru: {
+      locale: "ru-RU",
+      layers: {
+        frd: ["Молнии", "вспышек/км²/год"], tcwv: ["Водяной пар", "мм"], cape: ["Неустойчивость (CAPE)", "Дж/кг"],
+        precip: ["Осадки", "мм/год"], elev: ["Рельеф суши", "м"], koppen: ["Зоны Кёппена", ""],
+      },
+      koppen: {
+        1: { code: "Af", name: "Тропический влажный" }, 2: { code: "Am", name: "Тропический муссонный" },
+        3: { code: "Aw", name: "Тропическая саванна" }, 4: { code: "BW", name: "Пустыня" },
+        5: { code: "BS", name: "Степь, полупустыня" }, 6: { code: "C", name: "Умеренный" },
+        7: { code: "D", name: "Континентальный" }, 8: { code: "E", name: "Полярный, высокогорный" },
+      },
+      ocean: "океан",
+      zoneStr: kk => `${kk.code}, ${kk.name.toLowerCase()}`,
+      coord: (lat, lon, f) => `${f(Math.abs(lat), 2)}° ${lat >= 0 ? "с. ш." : "ю. ш."}, ${f(Math.abs(lon), 2)}° ${lon >= 0 ? "в. д." : "з. д."}`,
+      legendAria: (d, a, b) => `${d.name}, ${d.unit}: от ${a} до ${b}`,
+      noGrid: "Слои сетки не загружены",
+      ro: { frd: "Молнии", tcwv: "Водяной пар, мм", cape: "CAPE, Дж/кг", precip: "Осадки, мм/год", elev: "Высота, м", koppen: "Зона" },
+      popupCell: (c, f, fa) => `Ячейка карты 0.5°: <b>${fa(c.frd)}</b> вспышек/км²/год, водяной пар ${f(c.tcwv, 0)} мм, CAPE ${f(c.cape, 0)} Дж/кг, ${Number.isFinite(c.elev) ? "высота " + f(c.elev, 0) + " м" : "над водой"}; зона ${c.koppen}.`,
+      popupLis: "вспышек/км²/год (LIS, 0.1°)",
+      showTable: "Показать таблицей",
+      flashUnit: "вспышек/км²/год",
+      meanDensity: "Средняя плотность",
+      zone: "Зона",
+      land: "Суша", oceanS: "Океан", latitude: "Широта",
+      latTick: v => (v === 0 ? "0°" : `${Math.abs(v)}° ${v > 0 ? "с" : "ю"}`),
+      bins: {
+        tcwv: ["водяного пара", "Водяной пар, мм", "Водяной пар"],
+        cape: ["неустойчивости (CAPE)", "CAPE, Дж/кг", "CAPE"],
+        precip: ["осадков", "Осадки, мм/год", "Осадки"],
+        elev: ["высоты рельефа", "Высота, м", "Высота"],
+      },
+      binnedCap: l => `Средняя плотность молний в зависимости от ${l}, 60° ю. ш. – 60° с. ш.`,
+      landSea: (l, o, r) => `Между 35° ю. ш. и 35° с. ш. над сушей в среднем ${l} вспышки на км² в год, над океаном — ${o}, то есть примерно в ${r} раз меньше.`,
+      generated: (d, m) => `Слои собраны ${d}; молнии ${m.period.lightning}, ERA5 ${m.period.era5}.`,
+      sfx: "",
+    },
+    en: {
+      locale: "en-US",
+      layers: {
+        frd: ["Lightning", "flashes/km²/yr"], tcwv: ["Water vapor", "mm"], cape: ["Instability (CAPE)", "J/kg"],
+        precip: ["Precipitation", "mm/yr"], elev: ["Land elevation", "m"], koppen: ["Köppen climate zones", ""],
+      },
+      koppen: {
+        1: { code: "Af", name: "Tropical rainforest" }, 2: { code: "Am", name: "Tropical monsoon" },
+        3: { code: "Aw", name: "Tropical savanna" }, 4: { code: "BW", name: "Desert" },
+        5: { code: "BS", name: "Steppe, semi-arid" }, 6: { code: "C", name: "Temperate" },
+        7: { code: "D", name: "Continental" }, 8: { code: "E", name: "Polar and alpine" },
+      },
+      ocean: "ocean",
+      zoneStr: kk => `${kk.code}, ${kk.name.toLowerCase()}`,
+      coord: (lat, lon, f) => `${f(Math.abs(lat), 2)}° ${lat >= 0 ? "N" : "S"}, ${f(Math.abs(lon), 2)}° ${lon >= 0 ? "E" : "W"}`,
+      legendAria: (d, a, b) => `${d.name}, ${d.unit}: ${a} to ${b}`,
+      noGrid: "Grid layers are not loaded",
+      ro: { frd: "Lightning", tcwv: "Water vapor, mm", cape: "CAPE, J/kg", precip: "Precipitation, mm/yr", elev: "Elevation, m", koppen: "Zone" },
+      popupCell: (c, f, fa) => `Map cell (0.5°): <b>${fa(c.frd)}</b> flashes/km²/yr, water vapor ${f(c.tcwv, 0)} mm, CAPE ${f(c.cape, 0)} J/kg, ${Number.isFinite(c.elev) ? "elevation " + f(c.elev, 0) + " m" : "over water"}; zone ${c.koppen}.`,
+      popupLis: "flashes/km²/yr (LIS, 0.1°)",
+      showTable: "Show as table",
+      flashUnit: "flashes/km²/yr",
+      meanDensity: "Mean density",
+      zone: "Zone",
+      land: "Land", oceanS: "Ocean", latitude: "Latitude",
+      latTick: v => (v === 0 ? "0°" : `${Math.abs(v)}° ${v > 0 ? "N" : "S"}`),
+      bins: {
+        tcwv: ["water vapor", "Water vapor, mm", "Water vapor"],
+        cape: ["instability (CAPE)", "CAPE, J/kg", "CAPE"],
+        precip: ["precipitation", "Precipitation, mm/yr", "Precipitation"],
+        elev: ["elevation", "Elevation, m", "Elevation"],
+      },
+      binnedCap: l => `Mean lightning density by ${l}, 60° S – 60° N`,
+      landSea: (l, o, r) => `Between 35° S and 35° N, land averages ${l} flashes per km² per year and the ocean ${o} — roughly ${r} times fewer.`,
+      generated: (d, m) => `Layers built ${d}; lightning ${m.period.lightning}, ERA5 ${m.period.era5}.`,
+      sfx: "_en",
+    },
+  };
+  const T = I18N[(document.documentElement.lang || "ru").startsWith("en") ? "en" : "ru"];
+  // поле горячей точки на языке страницы (place / place_en и т. п.)
+  const hs = (h, f) => h[f + T.sfx] || h[f];
+
   const MERC_LAT = 85.0511287798;
   const NLAT = 360, NLON = 720, STEP = 0.5;
 
@@ -18,27 +100,23 @@
     1: "#1E40C0", 2: "#2F80E6", 3: "#71B8F2", 4: "#D63A2C",
     5: "#EEA22A", 6: "#3DAA58", 7: "#8C4FC4", 8: "#B9BEC9",
   };
-  const KOPPEN_FALLBACK = {
-    1: { code: "Af", name: "Тропический влажный" }, 2: { code: "Am", name: "Тропический муссонный" },
-    3: { code: "Aw", name: "Тропическая саванна" }, 4: { code: "BW", name: "Пустыня" },
-    5: { code: "BS", name: "Степь, полупустыня" }, 6: { code: "C", name: "Умеренный" },
-    7: { code: "D", name: "Континентальный" }, 8: { code: "E", name: "Полярный, высокогорный" },
-  };
+  const KOPPEN_FALLBACK = T.koppen;
 
   const log10 = Math.log10;
   const LAYERS = {
     frd: {
-      name: "Молнии", unit: "вспышек/км²/год",
+      
       t: v => (v < 0.1 ? NaN : log10(v / 0.1) / log10(150 / 0.1)),
       ticks: [0.1, 1, 10, 50, 150], tickT: v => log10(v / 0.1) / log10(150 / 0.1),
       alpha: t => Math.min(1, 0.25 + t * 3),
     },
-    tcwv: { name: "Водяной пар", unit: "мм", t: v => v / 60, ticks: [0, 15, 30, 45, 60] },
-    cape: { name: "Неустойчивость (CAPE)", unit: "Дж/кг", t: v => Math.sqrt(Math.max(v, 0) / 3000), ticks: [0, 250, 1000, 2000, 3000], sqrt: 3000 },
-    precip: { name: "Осадки", unit: "мм/год", t: v => Math.sqrt(Math.max(v, 0) / 5000), ticks: [0, 500, 1500, 3000, 5000], sqrt: 5000 },
-    elev: { name: "Рельеф суши", unit: "м", t: v => Math.sqrt(Math.max(v, 0) / 5000), ticks: [0, 300, 1000, 2500, 5000], sqrt: 5000, landOnly: true },
-    koppen: { name: "Зоны Кёппена", unit: "", categorical: true },
+    tcwv: { t: v => v / 60, ticks: [0, 15, 30, 45, 60] },
+    cape: { t: v => Math.sqrt(Math.max(v, 0) / 3000), ticks: [0, 250, 1000, 2000, 3000], sqrt: 3000 },
+    precip: { t: v => Math.sqrt(Math.max(v, 0) / 5000), ticks: [0, 500, 1500, 3000, 5000], sqrt: 5000 },
+    elev: { t: v => Math.sqrt(Math.max(v, 0) / 5000), ticks: [0, 300, 1000, 2500, 5000], sqrt: 5000, landOnly: true },
+    koppen: { categorical: true },
   };
+  for (const [k, [name, unit]] of Object.entries(T.layers)) Object.assign(LAYERS[k], { name, unit });
   LAYERS.tcwv.tickT = v => v / 60;
   for (const k of ["cape", "precip", "elev"]) LAYERS[k].tickT = v => Math.sqrt(v / LAYERS[k].sqrt);
 
@@ -60,7 +138,7 @@
     contour: true, thr: 20, opacity: 0.85, binVar: "tcwv",
   };
   const $ = id => document.getElementById(id);
-  const fmt = (v, d = 0) => (Number.isFinite(v) ? v.toLocaleString("ru-RU", { maximumFractionDigits: d, minimumFractionDigits: d }) : "—");
+  const fmt = (v, d = 0) => (Number.isFinite(v) ? v.toLocaleString(T.locale, { maximumFractionDigits: d, minimumFractionDigits: d }) : "—");
   const fmtAuto = v => (!Number.isFinite(v) ? "—" : v >= 100 ? fmt(v, 0) : v >= 10 ? fmt(v, 1) : fmt(v, 2));
 
   const readHash = () => Object.fromEntries(new URLSearchParams(location.hash.slice(1)));
@@ -94,6 +172,8 @@
     const c = map.getCenter();
     const p = new URLSearchParams({ layer: state.layer, lat: c.lat.toFixed(2), lon: c.lng.toFixed(2), z: map.getZoom() });
     history.replaceState(null, "", "#" + p);
+    const ll = $("lang-link");
+    if (ll) ll.href = ll.getAttribute("href").split("#")[0] + "#" + p;
   };
   map.on("moveend", persistView);
 
@@ -118,7 +198,6 @@
       for (let k = 0; k < u16.length; k++) out[k] = u16[k] === 65535 ? NaN : L_.offset + u16[k] * L_.scale;
       grid[key] = out;
     }));
-    if (meta.koppen) state.koppen = meta.koppen;
     return { meta, grid };
   }
 
@@ -268,7 +347,7 @@
       ticks.appendChild(s);
     }
     box.appendChild(ticks);
-    box.setAttribute("aria-label", `${d.name}, ${d.unit}: от ${d.ticks[0]} до ${d.ticks[d.ticks.length - 1]}`);
+    box.setAttribute("aria-label", T.legendAria(d, d.ticks[0], d.ticks[d.ticks.length - 1]));
   }
 
   // ---------------------------------------------------------------- значения под курсором
@@ -281,28 +360,27 @@
     return {
       frd: v("frd"), tcwv: v("tcwv"), cape: v("cape"), precip: v("precip"),
       elev: v("land") >= 0.5 ? v("elev") : NaN, land: v("land"),
-      koppen: kk ? `${kk.code}, ${kk.name.toLowerCase()}` : "океан",
+      koppen: kk ? T.zoneStr(kk) : T.ocean,
     };
   }
-  const coordStr = (lat, lon) =>
-    `${fmt(Math.abs(lat), 2)}° ${lat >= 0 ? "с. ш." : "ю. ш."}, ${fmt(Math.abs(lon), 2)}° ${lon >= 0 ? "в. д." : "з. д."}`;
+  const coordStr = (lat, lon) => T.coord(lat, lon, fmt);
 
   function showReadout(latlng) {
     const box = $("readout");
     const lon = ((((latlng.lng + 180) % 360) + 360) % 360) - 180;
     const c = cellValues(latlng.lat, lon);
     if (!c) {
-      box.innerHTML = `<div class="coord">${coordStr(latlng.lat, lon)}</div><p class="hint">Слои сетки не загружены</p>`;
+      box.innerHTML = `<div class="coord">${coordStr(latlng.lat, lon)}</div><p class="hint">${T.noGrid}</p>`;
       return;
     }
     const hl = k => (k === state.layer ? ' class="hl"' : "");
     box.innerHTML = `<div class="coord">${coordStr(latlng.lat, lon)}</div><dl>
-      <dt>Молнии</dt><dd${hl("frd")}>${fmtAuto(c.frd)}</dd>
-      <dt>Водяной пар, мм</dt><dd${hl("tcwv")}>${fmt(c.tcwv, 0)}</dd>
-      <dt>CAPE, Дж/кг</dt><dd${hl("cape")}>${fmt(c.cape, 0)}</dd>
-      <dt>Осадки, мм/год</dt><dd${hl("precip")}>${fmt(c.precip, 0)}</dd>
-      <dt>Высота, м</dt><dd${hl("elev")}>${Number.isFinite(c.elev) ? fmt(c.elev, 0) : "океан"}</dd>
-      <dt>Зона</dt><dd${hl("koppen")}>${c.koppen}</dd></dl>`;
+      <dt>${T.ro.frd}</dt><dd${hl("frd")}>${fmtAuto(c.frd)}</dd>
+      <dt>${T.ro.tcwv}</dt><dd${hl("tcwv")}>${fmt(c.tcwv, 0)}</dd>
+      <dt>${T.ro.cape}</dt><dd${hl("cape")}>${fmt(c.cape, 0)}</dd>
+      <dt>${T.ro.precip}</dt><dd${hl("precip")}>${fmt(c.precip, 0)}</dd>
+      <dt>${T.ro.elev}</dt><dd${hl("elev")}>${Number.isFinite(c.elev) ? fmt(c.elev, 0) : T.ocean}</dd>
+      <dt>${T.ro.koppen}</dt><dd${hl("koppen")}>${c.koppen}</dd></dl>`;
   }
   map.on("mousemove", e => showReadout(e.latlng));
   map.on("click", e => showReadout(e.latlng));
@@ -316,7 +394,7 @@
       if (h.rank <= 10) {
         m = L.marker([h.lat, h.lon], {
           icon: L.divIcon({ className: "", html: `<div class="hs-rank">${h.rank}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] }),
-          title: `${h.rank}. ${h.place}`, keyboard: true,
+          title: `${h.rank}. ${hs(h, "place")}`, keyboard: true,
         });
       } else {
         m = L.circleMarker([h.lat, h.lon], {
@@ -333,11 +411,11 @@
     const c = cellValues(h.lat, h.lon);
     let extra = "";
     if (c) {
-      extra = `<p>Ячейка карты 0.5°: <b>${fmtAuto(c.frd)}</b> вспышек/км²/год, водяной пар ${fmt(c.tcwv, 0)} мм, CAPE ${fmt(c.cape, 0)} Дж/кг, ${Number.isFinite(c.elev) ? "высота " + fmt(c.elev, 0) + " м" : "над водой"}; зона ${c.koppen}.</p>`;
+      extra = `<p>${T.popupCell(c, fmt, fmtAuto)}</p>`;
     }
-    return `<h3>${h.rank}. ${h.place}</h3>
-      <p>${h.country}, ${h.continent}</p>
-      <p><b>${fmt(h.frd, 2)}</b> вспышек/км²/год (LIS, 0.1°)</p>${extra}
+    return `<h3>${h.rank}. ${hs(h, "place")}</h3>
+      <p>${hs(h, "country")}, ${hs(h, "continent")}</p>
+      <p><b>${fmt(h.frd, 2)}</b> ${T.popupLis}</p>${extra}
       <p style="color:#6A7287">${coordStr(h.lat, h.lon)}</p>`;
   }
   function buildTop10() {
@@ -345,7 +423,7 @@
     ol.innerHTML = "";
     for (const h of state.hotspots.filter(h => h.rank <= 10).sort((a, b) => a.rank - b.rank)) {
       const li = document.createElement("li");
-      li.innerHTML = `<button type="button"><span class="rk">${h.rank}</span><span class="pl">${h.place} <small>${h.country}</small></span><span class="v">${fmt(h.frd, 1)}</span></button>`;
+      li.innerHTML = `<button type="button"><span class="rk">${h.rank}</span><span class="pl">${hs(h, "place")} <small>${hs(h, "country")}</small></span><span class="v">${fmt(h.frd, 1)}</span></button>`;
       li.firstChild.addEventListener("click", () => {
         if (!map.hasLayer(hotspotLayer)) { $("hotspots-on").checked = true; hotspotLayer.addTo(map); }
         map.flyTo([h.lat, h.lon], 7, { duration: matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1.2 });
@@ -392,11 +470,12 @@
   }
 
   const BIN_VARS = {
-    tcwv: { label: "водяного пара", axis: "Водяной пар, мм", step: 2.5, max: 65 },
-    cape: { label: "неустойчивости (CAPE)", axis: "CAPE, Дж/кг", step: 100, max: 3000 },
-    precip: { label: "осадков", axis: "Осадки, мм/год", step: 200, max: 5000 },
-    elev: { label: "высоты рельефа", axis: "Высота, м", step: 200, max: 5000, landOnly: true },
+    tcwv: { step: 2.5, max: 65 },
+    cape: { step: 100, max: 3000 },
+    precip: { step: 200, max: 5000 },
+    elev: { step: 200, max: 5000, landOnly: true },
   };
+  for (const [k, [label, axis, btn]] of Object.entries(T.bins)) Object.assign(BIN_VARS[k], { label, axis, btn });
   function binnedSeries(key) {
     const g = state.grid, spec = BIN_VARS[key], nb = Math.ceil(spec.max / spec.step);
     const acc = { land: Array.from({ length: nb }, () => [0, 0, 0]), ocean: Array.from({ length: nb }, () => [0, 0, 0]) };
@@ -459,11 +538,11 @@
 
   function tableFor(fig, head, rows) {
     const d = document.createElement("details");
-    d.innerHTML = `<summary>Показать таблицей</summary><table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    d.innerHTML = `<summary>${T.showTable}</summary><table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
     fig.appendChild(d);
   }
 
-  function lineChart(fig, { series, xLabel, xFmt, xTicks, yUnit = "вспышек/км²/год" }) {
+  function lineChart(fig, { series, xLabel, xFmt, xTicks, yUnit = T.flashUnit }) {
     clearFigure(fig);
     const live = series.filter(s => s.points.length);
     if (!live.length) return;
@@ -541,12 +620,12 @@
       el("path", { fill: KOPPEN_COLORS[r.k], d: `M${m.l},${by}h${w - 4}a4,4 0 0 1 4,4v${bh - 8}a4,4 0 0 1 -4,4h${-(w - 4)}z` }, svg);
       el("text", { class: "label", x: m.l + w + 6, y: by + 11 }, svg).textContent = fmtAuto(r.mean);
       const hit = el("rect", { x: 0, y, width: W, height: rowH, fill: "transparent" }, svg);
-      hit.addEventListener("pointermove", ev => showTip(`<b>${kk.code}</b> ${kk.name}<br>Средняя плотность: <b>${fmtAuto(r.mean)}</b> вспышек/км²/год`, ev.clientX, ev.clientY));
+      hit.addEventListener("pointermove", ev => showTip(`<b>${kk.code}</b> ${kk.name}<br>${T.meanDensity}: <b>${fmtAuto(r.mean)}</b> ${T.flashUnit}`, ev.clientX, ev.clientY));
       hit.addEventListener("pointerleave", hideTip);
     });
     el("line", { class: "zero", x1: m.l, x2: m.l, y1: 0, y2: H }, svg);
     fig.appendChild(svg);
-    tableFor(fig, ["Зона", "вспышек/км²/год"], rows.map(r => {
+    tableFor(fig, [T.zone, T.flashUnit], rows.map(r => {
       const kk = state.koppen[r.k] || KOPPEN_FALLBACK[r.k]; return [`${kk.code} ${kk.name}`, fmtAuto(r.mean)];
     }));
   }
@@ -560,18 +639,18 @@
     const c = chartColors();
     const z = zonalSeries();
     lineChart($("chart-zonal"), {
-      series: [{ name: "Суша", color: c.land, points: z.land }, { name: "Океан", color: c.ocean, points: z.ocean }],
-      xLabel: "Широта", xTicks: [-60, -30, 0, 30, 60],
-      xFmt: v => (v === 0 ? "0°" : `${Math.abs(v)}° ${v > 0 ? "с" : "ю"}`),
+      series: [{ name: T.land, color: c.land, points: z.land }, { name: T.oceanS, color: c.ocean, points: z.ocean }],
+      xLabel: T.latitude, xTicks: [-60, -30, 0, 30, 60],
+      xFmt: T.latTick,
     });
     renderBinned();
     barChart($("chart-koppen"), koppenBars());
   }
   function renderBinned() {
     const c = chartColors(), spec = BIN_VARS[state.binVar], b = binnedSeries(state.binVar);
-    $("binned-cap").textContent = `Средняя плотность молний в зависимости от ${spec.label}, 60° ю. ш. – 60° с. ш.`;
+    $("binned-cap").textContent = T.binnedCap(spec.label);
     lineChart($("chart-binned"), {
-      series: [{ name: "Суша", color: c.land, points: b.land }, { name: "Океан", color: c.ocean, points: b.ocean }],
+      series: [{ name: T.land, color: c.land, points: b.land }, { name: T.oceanS, color: c.ocean, points: b.ocean }],
       xLabel: spec.axis, xTicks: niceTicks(spec.max),
     });
   }
@@ -580,7 +659,7 @@
     for (const [k, s] of Object.entries(BIN_VARS)) {
       const b = document.createElement("button");
       b.type = "button"; b.setAttribute("role", "radio"); b.dataset.key = k;
-      b.textContent = { tcwv: "Водяной пар", cape: "CAPE", precip: "Осадки", elev: "Высота" }[k];
+      b.textContent = s.btn;
       b.addEventListener("click", () => {
         state.binVar = k;
         for (const x of box.children) x.setAttribute("aria-checked", x.dataset.key === k);
@@ -597,10 +676,10 @@
     const land = weightedMean((k, i) => tropical(k, i) && g.land[k] >= 0.5, k => g.frd[k]);
     const ocean = weightedMean((k, i) => tropical(k, i) && g.land[k] < 0.5, k => g.frd[k]);
     if (Number.isFinite(land) && ocean > 0) {
-      $("stat-landsea").textContent = `Между 35° ю. ш. и 35° с. ш. над сушей в среднем ${fmtAuto(land)} вспышки на км² в год, над океаном — ${fmtAuto(ocean)}, то есть примерно в ${fmt(land / ocean, 0)} раз меньше.`;
+      $("stat-landsea").textContent = T.landSea(fmtAuto(land), fmtAuto(ocean), fmt(land / ocean, 0));
     }
     if (state.meta.generated) {
-      $("generated").textContent = `Слои собраны ${new Date(state.meta.generated).toLocaleDateString("ru-RU")}; молнии ${state.meta.period.lightning}, ERA5 ${state.meta.period.era5}.`;
+      $("generated").textContent = T.generated(new Date(state.meta.generated).toLocaleDateString(T.locale), state.meta);
     }
   }
 

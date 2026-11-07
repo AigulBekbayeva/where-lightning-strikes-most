@@ -61,6 +61,13 @@ body {
   scrollbar-gutter: stable;
 }
 
+.intro { position: relative; }
+.lang-switch {
+  position: absolute; top: 2px; right: 0;
+  font-size: 13px; font-weight: 500; text-decoration: none;
+  padding: 3px 10px; border: 1px solid var(--rule); border-radius: 999px;
+}
+.lang-switch:hover { border-color: var(--accent); }
 .intro h1 {
   font: 700 30px/1.08 var(--font-display);
   letter-spacing: -0.01em;
