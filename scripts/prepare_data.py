@@ -27,6 +27,10 @@
     --years 1995-2014  период осреднения ERA5
     --native           не просить CDS интерполировать ERA5 на 0.5° (качать 0.25°)
     --skip-download    только обработка уже скачанных файлов из --cache
+    --lightning-only   только скачать LIS/OTD (быстрая проверка источников)
+
+Источники LIS/OTD по порядку: APDRC ERDDAP (https, затем http) → NASA Earthdata
+(нужны EARTHDATA_USERNAME / EARTHDATA_PASSWORD или ~/.netrc).
 """
 from __future__ import annotations
 
@@ -35,6 +39,7 @@ import datetime as dt
 import json
 import os
 import sys
+import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -51,8 +56,12 @@ LATS = 89.75 - STEP * np.arange(NLAT)
 LONS = -179.75 + STEP * np.arange(NLON)
 
 ERDDAP_DATASET = "hawaii_soest_9656_a274_105c"
-ERDDAP_BASE = f"https://apdrc.soest.hawaii.edu/erddap/griddap/{ERDDAP_DATASET}.nc"
 ERDDAP_QUERY = "hrfc_com_fr[0][0][(-89.75):1:(89.75)][(-179.75):1:(179.75)]"
+ERDDAP_HOSTS = ["https://apdrc.soest.hawaii.edu", "http://apdrc.soest.hawaii.edu"]
+# Коллекция LIS/OTD HRFC V2.3.2015 в каталоге NASA CMR (GHRC DAAC)
+GHRC_CONCEPT_ID = "C1995863244-GHRC_DAAC"
+GHRC_SHORT_NAME = "lohrfc"
+GHRC_DIRECT = "https://ghrc.earthdata.nasa.gov/pub/lohrfc__2.3.2015/data/LISOTD_HRFC_V2.3.2015.nc"
 
 ERA5_DATASET = "reanalysis-era5-single-levels-monthly-means"
 ERA5_MONTHLY = {
@@ -87,36 +96,97 @@ def log(msg: str) -> None:
 # ---------------------------------------------------------------------------
 # Загрузка
 # ---------------------------------------------------------------------------
+class SourceUnavailable(RuntimeError):
+    pass
+
+
+def _is_netcdf(path: Path) -> bool:
+    """netCDF3 начинается с b'CDF', netCDF4/HDF5 — с b'\\x89HDF'."""
+    try:
+        with open(path, "rb") as f:
+            head = f.read(8)
+    except OSError:
+        return False
+    return head[:3] == b"CDF" or head[:4] == b"\x89HDF"
+
+
+def _fetch(url: str, target: Path, timeout: int, headers: dict | None = None) -> None:
+    req = urllib.request.Request(url, headers={"User-Agent": "lightning-map-prep/1.1", **(headers or {})})
+    tmp = target.with_suffix(".part")
+    with urllib.request.urlopen(req, timeout=timeout) as r, open(tmp, "wb") as f:
+        while chunk := r.read(1 << 20):
+            f.write(chunk)
+    if not _is_netcdf(tmp):
+        tmp.unlink(missing_ok=True)
+        raise SourceUnavailable("ответ не похож на NetCDF (скорее всего, страница входа)")
+    tmp.replace(target)
+
+
 def download_lightning(cache: Path) -> Path:
+    """Перебирает источники HRFC по очереди; бросает SourceUnavailable, если не сработал ни один."""
     target = cache / "lisotd_hrfc.nc"
-    if target.exists():
+    if target.exists() and _is_netcdf(target):
         log(f"LIS/OTD HRFC уже скачан: {target}")
         return target
 
-    url = ERDDAP_BASE + "?" + urllib.parse.quote(ERDDAP_QUERY, safe="():")
-    log(f"Скачиваю LIS/OTD HRFC с APDRC ERDDAP …\n    {url}")
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "lightning-map-prep/1.0"})
-        with urllib.request.urlopen(req, timeout=300) as r, open(target, "wb") as f:
-            f.write(r.read())
-        return target
-    except Exception as e:  # noqa: BLE001
-        log(f"ERDDAP недоступен ({e}). Пробую NASA Earthdata (нужны EARTHDATA_USERNAME/PASSWORD или ~/.netrc).")
-        if target.exists():
-            target.unlink()
+    errors = []
+    query = "?" + urllib.parse.quote(ERDDAP_QUERY, safe="():")
+
+    # 1. Открытый ERDDAP APDRC (Гавайский университет) — без регистрации
+    for host in ERDDAP_HOSTS:
+        url = f"{host}/erddap/griddap/{ERDDAP_DATASET}.nc{query}"
+        for attempt in (1, 2):
+            log(f"LIS/OTD HRFC: APDRC ERDDAP, попытка {attempt} — {host}")
+            try:
+                _fetch(url, target, timeout=90)
+                log("  получено с APDRC")
+                return target
+            except Exception as e:  # noqa: BLE001
+                errors.append(f"{host}: {e}")
+                log(f"  не вышло: {e}")
+                time.sleep(5)
+
+    # 2. NASA Earthdata (GHRC DAAC) — нужна бесплатная учётная запись
+    user, pwd = os.getenv("EARTHDATA_USERNAME"), os.getenv("EARTHDATA_PASSWORD")
+    netrc = Path.home() / ".netrc"
+    if not (user and pwd) and not netrc.exists():
+        errors.append("NASA Earthdata: не заданы EARTHDATA_USERNAME / EARTHDATA_PASSWORD")
+        raise SourceUnavailable("; ".join(errors))
 
     import earthaccess  # noqa: PLC0415
 
-    earthaccess.login(strategy="environment" if os.getenv("EARTHDATA_USERNAME") else "netrc")
-    results = earthaccess.search_data(short_name="lohrfc", version="2.3.2015")
-    if not results:
-        sys.exit("Не нашёл коллекцию lohrfc в CMR.")
-    files = earthaccess.download(results, str(cache / "ghrc"))
-    nc = [Path(p) for p in files if str(p).endswith((".nc", ".nc4"))]
-    if not nc:
-        sys.exit(f"В выдаче GHRC нет NetCDF: {files}")
-    nc[0].rename(target)
-    return target
+    log("LIS/OTD HRFC: NASA Earthdata (GHRC DAAC) …")
+    auth = earthaccess.login(strategy="environment" if user and pwd else "netrc")
+    if not getattr(auth, "authenticated", True):
+        errors.append("NASA Earthdata: логин или пароль не приняты")
+        raise SourceUnavailable("; ".join(errors))
+
+    results = earthaccess.search_data(concept_id=GHRC_CONCEPT_ID) or \
+        earthaccess.search_data(short_name=GHRC_SHORT_NAME, version="2.3.2015")
+    if results:
+        files = [Path(p) for p in earthaccess.download(results, str(cache / "ghrc"))]
+        log(f"  скачано из GHRC: {[f.name for f in files]}")
+        nc = [f for f in files if _is_netcdf(f) and "HRFC" in f.name.upper()] or [f for f in files if _is_netcdf(f)]
+        if nc:
+            nc[0].replace(target)
+            return target
+        errors.append(f"GHRC: среди файлов нет NetCDF: {[f.name for f in files]}")
+    else:
+        errors.append("GHRC: коллекция не найдена в CMR")
+
+    # 3. Прямая ссылка на файл с авторизацией earthaccess
+    try:
+        log(f"LIS/OTD HRFC: прямая ссылка GHRC — {GHRC_DIRECT}")
+        files = earthaccess.download([GHRC_DIRECT], str(cache / "ghrc"))
+        f = Path(files[0])
+        if _is_netcdf(f):
+            f.replace(target)
+            return target
+        errors.append("GHRC (прямая ссылка): файл не NetCDF")
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"GHRC (прямая ссылка): {e}")
+
+    raise SourceUnavailable("; ".join(errors))
 
 
 def download_era5(cache: Path, years: list[int], native: bool) -> None:
@@ -313,6 +383,7 @@ def main() -> None:
     ap.add_argument("--years", default="1995-2014")
     ap.add_argument("--native", action="store_true")
     ap.add_argument("--skip-download", action="store_true")
+    ap.add_argument("--lightning-only", action="store_true", help="только скачать LIS/OTD (проверка источников)")
     args = ap.parse_args()
 
     y0, y1 = (int(x) for x in args.years.split("-"))
@@ -321,8 +392,28 @@ def main() -> None:
     args.out.mkdir(parents=True, exist_ok=True)
 
     if not args.skip_download:
-        download_lightning(args.cache)
-        download_era5(args.cache, years, args.native)
+        # ERA5 качаем, даже если молнии не скачались: в GitHub Actions скачанное кешируется,
+        # и повторный запуск не будет снова ждать очередь CDS.
+        lightning_error = None
+        try:
+            download_lightning(args.cache)
+        except SourceUnavailable as e:
+            lightning_error = str(e)
+            log(f"⚠ LIS/OTD HRFC не скачан: {e}")
+        if not args.lightning_only:
+            download_era5(args.cache, years, args.native)
+        if lightning_error:
+            sys.exit(
+                "\nНе удалось скачать климатологию молний LIS/OTD.\n"
+                f"Причины: {lightning_error}\n\n"
+                "Что сделать: заведите бесплатную учётную запись NASA Earthdata "
+                "(https://urs.earthdata.nasa.gov), добавьте секреты репозитория EARTHDATA_USERNAME "
+                "и EARTHDATA_PASSWORD и запустите workflow ещё раз."
+                + ("" if args.lightning_only else " ERA5 уже сохранён в кеше.")
+            )
+        if args.lightning_only:
+            log("Готово: только загрузка LIS/OTD (--lightning-only)")
+            return
 
     log("Читаю LIS/OTD HRFC …")
     frd = read_lightning(args.cache / "lisotd_hrfc.nc")
