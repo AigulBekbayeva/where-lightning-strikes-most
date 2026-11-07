@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Where Lightning Strikes Most — Earth's thunderstorm map</title>
+  <meta name="description" content="Interactive map of Earth's thunderstorm activity from NASA LIS/OTD and ERA5: lightning, humidity, atmospheric instability, terrain and Köppen climate zones.">
+  <link rel="alternate" hreflang="ru" href="index.html">
+  <link rel="alternate" hreflang="en" href="en.html">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M18 2 6 18h8l-2 12 12-16h-8z' fill='%235B3FD9'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="panel" aria-label="About the map and controls">
+      <header class="intro">
+        <a class="lang-switch" id="lang-link" href="index.html" hreflang="ru" lang="ru">Русский</a>
+        <h1>Where Lightning Strikes Most</h1>
+        <p class="lede">Where on Earth do thunderstorms happen most often? How is lightning linked to humidity, terrain and tropical climate zones?</p>
+        <p class="byline">Data: NASA LIS/OTD, ERA5</p>
+      </header>
+
+      <section class="controls" aria-labelledby="layers-h">
+        <h2 id="layers-h">Map layer</h2>
+        <div class="layer-list" role="radiogroup" aria-labelledby="layers-h" id="layer-list"></div>
+        <div class="legend" id="legend" aria-live="polite"></div>
+
+        <div class="toggles">
+          <label class="toggle">
+            <input type="checkbox" id="contour-on" checked>
+            <span>Thunderstorm outline over the layer: from <output id="contour-val">20</output> flashes/km²/yr</span>
+          </label>
+          <input type="range" id="contour-thr" min="2" max="80" step="1" value="20" aria-label="Thunderstorm outline threshold">
+          <label class="toggle">
+            <input type="checkbox" id="hotspots-on" checked>
+            <span>Hotspots (Albrecht et al., 2016)</span>
+          </label>
+          <label class="toggle slider">
+            <span>Layer opacity</span>
+            <input type="range" id="opacity" min="0.2" max="1" step="0.05" value="0.85" aria-label="Layer opacity">
+          </label>
+        </div>
+        <p class="nodata" id="nodata" hidden>
+          The grid layers haven't been built yet, so the map shows only the hotspots. Run Actions → <b>Build data</b>
+          in the repository, or <code>python scripts/prepare_data.py</code> locally — see the README.
+        </p>
+      </section>
+
+      <section class="story" id="story">
+        <h2>The thunderstorm belt</h2>
+        <p>The LIS and OTD sensors counted flashes from space for 20 years. Earth produces about 44 flashes per second on average, and most of them happen in the tropics. <span id="stat-landsea"></span></p>
+        <figure class="chart" id="chart-zonal">
+          <figcaption>Mean lightning density by latitude</figcaption>
+        </figure>
+        <p>Land heats up faster than the ocean, which drives stronger updrafts. In those clouds, ice crystals and graupel collide more often — and those collisions are what separate electric charge. The air over the ocean is warm and moist too, but it rises more weakly, so storms there are much rarer.</p>
+
+        <h2>Moisture is needed, but not enough</h2>
+        <p>Choose what to compare lightning with. Over the ocean, even the most humid air produces few flashes: storms also need an unstable atmosphere (CAPE) and something to lift the air — heated land, mountains, converging breezes.</p>
+        <div class="seg" role="radiogroup" aria-label="Variable to compare" id="bin-var"></div>
+        <figure class="chart" id="chart-binned">
+          <figcaption id="binned-cap">Mean lightning density by water vapor</figcaption>
+        </figure>
+
+        <h2>Climate zones</h2>
+        <p>Köppen zones are computed from ERA5 temperature and precipitation over the same period. As expected, the tropics lead. Compare the tropical rainforest (Af), monsoon (Am) and savanna (Aw) climates with each other: they differ in the length of the dry season.</p>
+        <figure class="chart" id="chart-koppen">
+          <figcaption>Mean lightning density over land by Köppen zone</figcaption>
+        </figure>
+
+        <h2>Terrain and the lightning capital</h2>
+        <p>The world record holder is the southern part of Lake Maracaibo in Venezuela, with about 232 flashes per km² per year. The warm lake is boxed in by Andean ranges; at night, mountain–valley and lake breezes converge over the water and set off storms nearly 300 nights a year. Second place goes to the mountains near Kabare in the eastern DR Congo. Of the 500 hotspots, 283 are in Africa, and the strongest are almost always tied to complex terrain.</p>
+        <ol class="top10" id="top10"></ol>
+        <p class="note">The hotspots were computed from LIS on a 0.1° grid (1998–2013), while the map layer uses a 0.5° grid. That is why map cells show lower values: a larger cell averages the peak with its surroundings.</p>
+      </section>
+
+      <footer class="sources">
+        <h2>Sources</h2>
+        <ul>
+          <li><a href="https://doi.org/10.5067/LIS/LIS-OTD/DATA302">NASA LIS/OTD 0.5° High Resolution Full Climatology (HRFC) V2.3.2015</a>, GHRC DAAC; mirrored via <a href="https://apdrc.soest.hawaii.edu/erddap/info/hawaii_soest_9656_a274_105c/index.html">APDRC ERDDAP</a></li>
+          <li><a href="https://doi.org/10.24381/cds.f17050d7">ERA5 monthly averaged data on single levels</a>, Copernicus Climate Change Service</li>
+          <li>Albrecht R. I. et al. (2016). <a href="https://doi.org/10.1175/BAMS-D-14-00193.1">Where Are the Lightning Hotspots on Earth?</a> BAMS 97(11)</li>
+          <li>Cecil D. J. et al. (2014). <a href="https://doi.org/10.1016/j.atmosres.2012.06.028">Gridded lightning climatology from TRMM-LIS and OTD</a>. Atmospheric Research</li>
+          <li>Peel M. C. et al. (2007). <a href="https://doi.org/10.5194/hess-11-1633-2007">Updated world map of the Köppen-Geiger climate classification</a>. HESS</li>
+        </ul>
+        <p id="generated" class="note"></p>
+      </footer>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map" aria-label="Map"></div>
+      <div class="readout" id="readout" aria-live="polite">
+        <p class="hint">Hover over the map</p>
+      </div>
+    </main>
+  </div>
+
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
