@@ -94,7 +94,7 @@ git add data/grid && git commit -m "Add data layers" && git push
 - Для ERA5 из среднемесячных полей строится климатология по 12 месяцам, затем считаются годовые средние (TCWV, CAPE) и суммы (осадки).
 - Зоны Кёппена — основные классы по Peel et al. (2007): сначала полярные (самый тёплый месяц < 10 °C), затем засушливые B, затем A / C / D по температуре самого холодного месяца (18 °C и 0 °C). Тропические делятся на Af / Am / Aw по осадкам самого сухого месяца.
 - Слои хранятся как `uint16` с линейным масштабом (`value = offset + q × scale`, 65535 — нет данных); параметры в `meta.json`.
-- На странице сетка перепроецируется в Web Mercator на `<canvas>` и кладётся поверх подложки CARTO.
+- На странице сетка перепроецируется в Web Mercator на `<canvas>` и кладётся поверх подложки. Подложки бесплатные и без ключа: Esri World Dark Gray Canvas (по умолчанию, с отдельным слоем подписей) и ночные огни NASA GIBS VIIRS City Lights 2012 — переключаются в правом верхнем углу карты.
 - Средние на графиках взвешены по cos(широты), чтобы ячейки у полюсов не перевешивали.
 
 ## Ограничения
@@ -111,5 +111,5 @@ git add data/grid && git commit -m "Add data layers" && git push
 - Albrecht R. I. et al. (2016). *Where Are the Lightning Hotspots on Earth?* BAMS 97(11), 2051–2068. [doi:10.1175/BAMS-D-14-00193.1](https://doi.org/10.1175/BAMS-D-14-00193.1)
 - Peel M. C., Finlayson B. L., McMahon T. A. (2007). *Updated world map of the Köppen-Geiger climate classification.* HESS 11, 1633–1644. [doi:10.5194/hess-11-1633-2007](https://doi.org/10.5194/hess-11-1633-2007)
 
-Подложка карты © OpenStreetMap, © CARTO. Код — MIT.
+Подложки: © Esri (Esri, HERE, Garmin, © участники OpenStreetMap); NASA GIBS. Код — MIT.
 Содержит модифицированные данные Copernicus Climate Change Service.

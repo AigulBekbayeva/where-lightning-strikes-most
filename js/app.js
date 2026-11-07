@@ -42,6 +42,7 @@
       landSea: (l, o, r) => `Между 35° ю. ш. и 35° с. ш. над сушей в среднем ${l} вспышки на км² в год, над океаном — ${o}, то есть примерно в ${r} раз меньше.`,
       generated: (d, m) => `Слои собраны ${d}; молнии ${m.period.lightning}, ERA5 ${m.period.era5}.`,
       sfx: "",
+      basemaps: { dark: "Тёмная карта (Esri)", night: "Ночные огни (NASA)", labels: "Подписи" },
     },
     en: {
       locale: "en-US",
@@ -79,6 +80,7 @@
       landSea: (l, o, r) => `Between 35° S and 35° N, land averages ${l} flashes per km² per year and the ocean ${o} — roughly ${r} times fewer.`,
       generated: (d, m) => `Layers built ${d}; lightning ${m.period.lightning}, ERA5 ${m.period.era5}.`,
       sfx: "_en",
+      basemaps: { dark: "Dark map (Esri)", night: "Night lights (NASA)", labels: "Labels" },
     },
   };
   const T = I18N[(document.documentElement.lang || "ru").startsWith("en") ? "en" : "ru"];
@@ -152,15 +154,38 @@
     maxBounds: [[-88, -220], [88, 220]], maxBoundsViscosity: 0.8, worldCopyJump: false,
     zoomSnap: 0.5,
   });
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: "abcd", noWrap: true,
-  }).addTo(map);
+  // Подложки без API-ключа: Esri Dark Gray Canvas и NASA GIBS (ночные огни VIIRS)
   map.createPane("labels-pane").style.zIndex = 450;
   map.getPane("labels-pane").classList.add("labels-pane");
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png", {
-    subdomains: "abcd", pane: "labels-pane", noWrap: true, opacity: 0.75,
-  }).addTo(map);
+  const ESRI = "https://{s}.arcgisonline.com/ArcGIS/rest/services/Canvas/";
+  const esriOpts = { subdomains: ["server", "services"], maxNativeZoom: 16, noWrap: true };
+  const BASEMAPS = {
+    dark: L.tileLayer(ESRI + "World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+      ...esriOpts,
+      attribution: 'Tiles &copy; <a href="https://www.esri.com">Esri</a> — Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+    }),
+    night: L.tileLayer("https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg", {
+      maxNativeZoom: 8, noWrap: true,
+      bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
+      attribution: 'Imagery: <a href="https://earthdata.nasa.gov/gibs">NASA GIBS</a>, VIIRS City Lights 2012',
+    }),
+  };
+  const labelsLayer = L.tileLayer(ESRI + "World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {
+    ...esriOpts, pane: "labels-pane", opacity: 0.8,
+  });
+  state.basemap = BASEMAPS[h0.bm] ? h0.bm : "dark";
+  BASEMAPS[state.basemap].addTo(map);
+  if (h0.labels !== "0") labelsLayer.addTo(map);
+  L.control.layers(
+    { [T.basemaps.dark]: BASEMAPS.dark, [T.basemaps.night]: BASEMAPS.night },
+    { [T.basemaps.labels]: labelsLayer },
+    { position: "topright" },
+  ).addTo(map);
+  map.on("baselayerchange", e => {
+    state.basemap = Object.keys(BASEMAPS).find(k => BASEMAPS[k] === e.layer) || "dark";
+    persistView();
+  });
+  map.on("overlayadd overlayremove", () => persistView());
 
   const BOUNDS = [[-MERC_LAT, -180], [MERC_LAT, 180]];
   const blank = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
@@ -171,6 +196,8 @@
   const persistView = () => {
     const c = map.getCenter();
     const p = new URLSearchParams({ layer: state.layer, lat: c.lat.toFixed(2), lon: c.lng.toFixed(2), z: map.getZoom() });
+    if (state.basemap && state.basemap !== "dark") p.set("bm", state.basemap);
+    if (!map.hasLayer(labelsLayer)) p.set("labels", "0");
     history.replaceState(null, "", "#" + p);
     const ll = $("lang-link");
     if (ll) ll.href = ll.getAttribute("href").split("#")[0] + "#" + p;
