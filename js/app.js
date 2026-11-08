@@ -598,10 +598,18 @@
     el("text", { x: (m.l + W - m.r) / 2, y: H - 2, "text-anchor": "middle" }, ax).textContent = xLabel;
     for (const s of live) {
       el("path", { class: "series", stroke: s.color, d: s.points.map((p, i) => `${i ? "L" : "M"}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join("") }, svg);
-      const last = s.points.reduce((a, p) => (p[1] > a[1] ? p : a));
-      if (live.length > 1) {
-        const lb = el("text", { class: "label", x: Math.min(W - m.r + 4, X(last[0]) + 6), y: Y(last[1]) - 6 }, svg);
-        lb.textContent = s.name;
+    }
+    // подписи у правого конца линий, разведённые по высоте
+    if (live.length > 1) {
+      const labels = live.map(s => {
+        const end = s.points[s.points.length - 1];
+        return { name: s.name, x: X(end[0]) + 6, y: Y(end[1]) + 4 };
+      }).sort((a, b) => a.y - b.y);
+      for (let i = 1; i < labels.length; i++) labels[i].y = Math.max(labels[i].y, labels[i - 1].y + 12);
+      const over = labels[labels.length - 1].y - (H - m.b - 2);
+      if (over > 0) labels.forEach(l => (l.y -= over));
+      for (const l of labels) {
+        el("text", { class: "label", x: Math.min(W - m.r + 4, l.x), y: Math.max(m.t + 10, l.y) }, svg).textContent = l.name;
       }
     }
     // перекрестие
