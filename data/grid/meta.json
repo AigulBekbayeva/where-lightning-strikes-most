@@ -1,0 +1,121 @@
+{
+  "title": "Where Lightning Strikes Most",
+  "generated": "2026-11-08T01:16:45+00:00",
+  "grid": {
+    "nlat": 360,
+    "nlon": 720,
+    "lat0": 89.75,
+    "lon0": -179.75,
+    "step": 0.5,
+    "order": "row-major, north→south, west→east",
+    "dtype": "uint16le",
+    "nodata": 65535
+  },
+  "period": {
+    "lightning": "1995-05 – 2014-12",
+    "era5": "1995–2014"
+  },
+  "koppen": {
+    "1": {
+      "code": "Af",
+      "name": "Тропический влажный"
+    },
+    "2": {
+      "code": "Am",
+      "name": "Тропический муссонный"
+    },
+    "3": {
+      "code": "Aw",
+      "name": "Тропическая саванна"
+    },
+    "4": {
+      "code": "BW",
+      "name": "Пустыня"
+    },
+    "5": {
+      "code": "BS",
+      "name": "Степь, полупустыня"
+    },
+    "6": {
+      "code": "C",
+      "name": "Умеренный"
+    },
+    "7": {
+      "code": "D",
+      "name": "Континентальный"
+    },
+    "8": {
+      "code": "E",
+      "name": "Полярный, высокогорный"
+    }
+  },
+  "sources": [
+    "NASA LIS/OTD 0.5° High Resolution Full Climatology (HRFC) V2.3.2015, doi:10.5067/LIS/LIS-OTD/DATA302",
+    "Copernicus ERA5 monthly averaged reanalysis on single levels, doi:10.24381/cds.f17050d7"
+  ],
+  "layers": {
+    "frd": {
+      "file": "frd.bin",
+      "offset": 0.0,
+      "scale": 0.003078734626971424,
+      "min": 0.0,
+      "max": 201.7617950439453,
+      "units": "вспышек/км²/год",
+      "label": "Молнии"
+    },
+    "tcwv": {
+      "file": "tcwv.bin",
+      "offset": 0.24593825545161963,
+      "scale": 0.0008806720002646266,
+      "min": 0.24593825545161963,
+      "max": 57.95989712079366,
+      "units": "мм",
+      "label": "Водяной пар в столбе атмосферы"
+    },
+    "cape": {
+      "file": "cape.bin",
+      "offset": 0.04303385429375339,
+      "scale": 0.040858669583498965,
+      "min": 0.04303385429375339,
+      "max": 2677.675086339315,
+      "units": "Дж/кг",
+      "label": "Неустойчивость атмосферы (CAPE)"
+    },
+    "precip": {
+      "file": "precip.bin",
+      "offset": 0.5400449027437304,
+      "scale": 0.28150234000709595,
+      "min": 0.5400449027437304,
+      "max": 18448.51439492777,
+      "units": "мм/год",
+      "label": "Осадки"
+    },
+    "elev": {
+      "file": "elev.bin",
+      "offset": -66.17315920510572,
+      "scale": 0.08451066744701707,
+      "min": -66.17315920510572,
+      "max": 5472.148921267712,
+      "units": "м",
+      "label": "Высота рельефа"
+    },
+    "land": {
+      "file": "land.bin",
+      "offset": 0.0,
+      "scale": 1.5259254737998596e-05,
+      "min": 0.0,
+      "max": 1.0,
+      "units": "доля",
+      "label": "Доля суши в ячейке"
+    },
+    "koppen": {
+      "file": "koppen.bin",
+      "offset": 0.0,
+      "scale": 1.0,
+      "min": 0.0,
+      "max": 8.0,
+      "label": "Климатические зоны Кёппена",
+      "categorical": true
+    }
+  }
+}
