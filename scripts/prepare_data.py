@@ -345,6 +345,7 @@ def read_lightning(path: Path) -> np.ndarray:
 
     arr = np.nan_to_num(arr, nan=0.0)
     arr[arr < 0] = 0
+    arr = despike(arr)
 
     # Проверка ориентации: Пакистан (34° с. ш.) — горячая точка, а на 34° ю. ш. там океан
     i_n, i_s, j = _idx(34.25), _idx(-34.25), _jdx(72.25)
@@ -352,6 +353,26 @@ def read_lightning(path: Path) -> np.ndarray:
         log("⚠ похоже, широты перевёрнуты — переворачиваю")
         arr = arr[::-1, :]
     return arr
+
+
+def despike(arr: np.ndarray, ratio: float = 10.0, floor: float = 20.0) -> np.ndarray:
+    """Убирает одиночные выбросы: ячейка намного больше медианы 8 соседей.
+
+    В высоких широтах OTD видел ячейку считаные минуты, и одна случайная вспышка
+    даёт огромную «плотность» (например, ~200 вспышек/км²/год у 79° с. ш.).
+    Настоящие очаги (Конго, Маракайбо) окружены высокими значениями и не задеваются.
+    """
+    padded = np.pad(arr, 1, mode="edge")
+    padded[:, 0], padded[:, -1] = padded[:, -3], padded[:, 2]   # долгота замкнута
+    neigh = np.stack([padded[1 + di:1 + di + arr.shape[0], 1 + dj:1 + dj + arr.shape[1]]
+                      for di in (-1, 0, 1) for dj in (-1, 0, 1) if (di, dj) != (0, 0)])
+    med = np.median(neigh, axis=0)
+    spikes = (arr > floor) & (arr > ratio * np.maximum(med, 0.5))
+    for i, j in zip(*np.nonzero(spikes)):
+        log(f"  выброс убран: {arr[i, j]:.1f} → {med[i, j]:.2f} в ячейке {LATS[i]:.2f}°, {LONS[j]:.2f}°")
+    out = arr.copy()
+    out[spikes] = med[spikes]
+    return out
 
 
 def _idx(lat: float) -> int:
